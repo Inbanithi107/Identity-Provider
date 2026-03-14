@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: identityprovider
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/identityprovider
+    username: root
+    password: 1234
+
+  jpa:
+    show-sql: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
+server:
+  port: 9000

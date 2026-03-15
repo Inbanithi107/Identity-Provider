@@ -30,10 +30,53 @@ public class UserIdentity {
 
     private String providerUserId;
 
-    private String passwordHash;
-
     @ManyToOne
     @JoinColumn
     private User user;
 
+    public UUID getId() {
+        return id;
+    }
+
+    public UserIdentity setId(UUID id) {
+        this.id = id;
+        return this;
+    }
+
+    public AuthProvider getProvider() {
+        return provider;
+    }
+
+    public UserIdentity setProvider(AuthProvider provider) {
+        this.provider = provider;
+        return this;
+    }
+
+    public String getProviderUserId() {
+        return providerUserId;
+    }
+
+    public UserIdentity setProviderUserId(String providerUserId) {
+        this.providerUserId = providerUserId;
+        return this;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public UserIdentity setUser(User user) {
+        this.user = user;
+        return this;
+    }
+
+    public UserIdentity(AuthProvider provider, User user) {
+        this.provider = provider;
+        this.user = user;
+    }
+
+    public UserIdentity(AuthProvider provider, String providerUserId) {
+        this.provider = provider;
+        this.providerUserId = providerUserId;
+    }
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -17,6 +18,7 @@ import jakarta.persistence.Table;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -34,15 +36,17 @@ public class User {
 
     private String email;
 
+    private String passwordHash;
+
     private String mobile;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
     @Enumerated(value = EnumType.STRING)
-    private Set<Role> roles;
+    private Set<Role> roles = new HashSet<>();
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private List<UserIdentity> identities;
 
     public UUID getId() {
@@ -96,6 +100,15 @@ public class User {
 
     public User setRoles(Set<Role> roles) {
         this.roles = roles;
+        return this;
+    }
+
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+
+    public User setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
         return this;
     }
 }

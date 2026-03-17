@@ -14,4 +14,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("select u from User u where u.email = :email")
     Optional<User> getUserByEmail(@Param("email") String email);
 
+    @Query("select u from User u join fetch u.roles where u.email = :email")
+    Optional<User> getUserWithRoles(@Param("email") String email);
+
 }

@@ -79,4 +79,8 @@ public class UserIdentity {
         this.provider = provider;
         this.providerUserId = providerUserId;
     }
+
+    public UserIdentity(){
+        
+    }
 }

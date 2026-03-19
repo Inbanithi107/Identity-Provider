@@ -6,6 +6,8 @@ public class RegisterUserRequest {
 
     private String password;
 
+    private String name;
+
     public String getEmail() {
         return email;
     }
@@ -21,6 +23,15 @@ public class RegisterUserRequest {
 
     public RegisterUserRequest setPassword(String password) {
         this.password = password;
+        return this;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public RegisterUserRequest setName(String name) {
+        this.name = name;
         return this;
     }
 }

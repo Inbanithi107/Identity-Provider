@@ -4,7 +4,9 @@ import com.techforge.identityprovider.service.SecurityUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -15,6 +17,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
+import org.springframework.security.web.context.SecurityContextRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -33,9 +37,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/image/**", "/js/**", "/register", "/error", "/favicon.ico", "/.well-known/**")
                         .permitAll().anyRequest().authenticated())
-                .formLogin(Customizer.withDefaults())
+                .formLogin(form-> form.loginPage("/login").permitAll())
                 .oauth2Login(oauth2-> oauth2.userInfoEndpoint(ep-> ep.oidcUserService(userDetailsService))
-                        .authorizationEndpoint(auth-> auth.authorizationRequestResolver(authorizationRequestResolver(repo))))
+                        .authorizationEndpoint(auth-> auth.authorizationRequestResolver(authorizationRequestResolver(repo))).loginPage("/login").permitAll())
                 .build();
     }
 
@@ -59,6 +63,16 @@ public class SecurityConfig {
         );
 
         return resolver;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config){
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public SecurityContextRepository securityContextRepository(){
+        return new HttpSessionSecurityContextRepository();
     }
 
 }

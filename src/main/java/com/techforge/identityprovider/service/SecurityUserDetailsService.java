@@ -11,12 +11,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -53,7 +50,6 @@ public class SecurityUserDetailsService implements UserDetailsService, OAuth2Use
         AuthProvider provider = AuthProvider.valueOf(userRequest.getClientRegistration().getRegistrationId().toUpperCase());
         String providerId = oAuth2User.getAttribute("sub");
         String email = oAuth2User.getAttribute("email");
-        System.out.println("dkbckudfbakudbkaduhkuasbfaukgsbkuahdiaufbciahefuabfisuefasuhfuiashf");
         User user = identityRepository.getIdentityByProviderAndProviderId(provider, providerId)
                 .map(UserIdentity::getUser)
                 .orElseGet(()-> userIdentityService.registerUser(provider, providerId, email));

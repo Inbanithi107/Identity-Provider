@@ -1,5 +1,11 @@
 package com.techforge.identityprovider.configuration;
 
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import com.techforge.identityprovider.entity.Jwk;
+import com.techforge.identityprovider.repository.JwkRepository;
 import com.techforge.identityprovider.service.SecurityUserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.Nullable;
@@ -8,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -25,7 +30,6 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
-import org.springframework.security.oauth2.server.authorization.client.JdbcRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
@@ -38,7 +42,7 @@ import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import javax.sql.DataSource;
+import java.text.ParseException;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.UUID;
@@ -153,6 +157,15 @@ public class SecurityConfig {
             }
         };
 
+    }
+
+    @Bean
+    public JWKSource<SecurityContext> jwkSource(JwkRepository repository) throws ParseException {
+        Jwk jwk = repository.findAll().getFirst();
+        RSAKey rsaKey = RSAKey.parse(jwk.getKeyString());
+        JWKSet jwkSet = new JWKSet(rsaKey);
+        return ((jwkSelector, securityContext) ->
+                jwkSelector.select(jwkSet));
     }
 
 }

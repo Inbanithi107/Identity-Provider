@@ -4,7 +4,6 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.techforge.identityprovider.entity.Jwk;
 import com.techforge.identityprovider.repository.JwkRepository;
 import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import java.security.KeyPair;
@@ -14,27 +13,23 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.UUID;
 
 @Component
-public class JwkInitializer implements ApplicationRunner {
+public class JwkInitializer {
 
     private final JwkRepository jwkRepository;
 
     public JwkInitializer(JwkRepository jwkRepository) {
         this.jwkRepository = jwkRepository;
     }
+    public Jwk getJwk() {
+        return jwkRepository.findTopByOrderByIdAsc().orElseGet(()->{
+            KeyPair keyPair = generateRsaKey();
+            RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
+                    .privateKey((RSAPrivateKey) keyPair.getPrivate())
+                    .keyID(UUID.randomUUID().toString())
+                    .build();
 
-    @Override
-    public void run(ApplicationArguments args) throws Exception {
-        if(jwkRepository.count()!=0){
-            return;
-        }
-
-        KeyPair keyPair = generateRsaKey();
-        RSAKey rsaKey = new RSAKey.Builder((RSAPublicKey) keyPair.getPublic())
-                .privateKey((RSAPrivateKey) keyPair.getPrivate())
-                .keyID(UUID.randomUUID().toString())
-                .build();
-
-        jwkRepository.save(new Jwk().setKeyString(rsaKey.toJSONString()));
+            return jwkRepository.save(new Jwk().setKeyString(rsaKey.toJSONString()));
+        });
 
     }
 

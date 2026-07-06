@@ -5,7 +5,7 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.techforge.identityprovider.entity.Jwk;
-import com.techforge.identityprovider.repository.JwkRepository;
+import com.techforge.identityprovider.initializer.JwkInitializer;
 import com.techforge.identityprovider.service.SecurityUserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.Nullable;
@@ -72,8 +72,7 @@ public class SecurityConfig {
     @Bean
     @Order(2)
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, ClientRegistrationRepository repo){
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                new OAuth2AuthorizationServerConfigurer();
+
         return http
 
                 .csrf(AbstractHttpConfigurer::disable)
@@ -160,8 +159,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public JWKSource<SecurityContext> jwkSource(JwkRepository repository) throws ParseException {
-        Jwk jwk = repository.findAll().getFirst();
+    public JWKSource<SecurityContext> jwkSource(JwkInitializer initializer) throws ParseException {
+        Jwk jwk = initializer.getJwk();
         RSAKey rsaKey = RSAKey.parse(jwk.getKeyString());
         JWKSet jwkSet = new JWKSet(rsaKey);
         return ((jwkSelector, securityContext) ->

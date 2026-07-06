@@ -40,6 +40,8 @@ public class User {
 
     private String mobile;
 
+    private boolean mfaEnabled;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -109,6 +111,15 @@ public class User {
 
     public User setPasswordHash(String passwordHash) {
         this.passwordHash = passwordHash;
+        return this;
+    }
+
+    public boolean isMfaEnabled() {
+        return mfaEnabled;
+    }
+
+    public User setMfaEnabled(boolean mfaEnabled) {
+        this.mfaEnabled = mfaEnabled;
         return this;
     }
 }

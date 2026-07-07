@@ -24,6 +24,9 @@ public class UserController {
 
     private final SecurityContextRepository securityContextRepository;
 
+
+    private final RequestCache requestCache = new HttpSessionRequestCache();
+
     public UserController(UserService userService, SecurityContextRepository securityContextRepository) {
         this.userService = userService;
         this.securityContextRepository = securityContextRepository;
@@ -36,7 +39,6 @@ public class UserController {
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
         securityContextRepository.saveContext(context, httpRequest, httpResponse);
-        RequestCache requestCache = new HttpSessionRequestCache();
         SavedRequest savedRequest = requestCache.getRequest(httpRequest, httpResponse);
         if(Optional.ofNullable(savedRequest).isPresent()){
             String redirectUri = savedRequest.getRedirectUrl();

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enable Two-Factor Authentication</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 500px;
+            background: #fff;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            animation: fadeIn .5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .shield {
+            width: 90px;
+            height: 90px;
+            margin: auto;
+            border-radius: 50%;
+            background: linear-gradient(135deg,#2563eb,#7c3aed);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #222;
+            margin-bottom: 15px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        button {
+            border: none;
+            cursor: pointer;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: .3s;
+            font-weight: 600;
+        }
+
+        .yes-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .yes-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-2px);
+        }
+
+        .no-btn {
+            background: #f3f4f6;
+            color: #333;
+        }
+
+        .no-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 25px;
+        }
+
+        .spinner {
+            width: 45px;
+            height: 45px;
+            margin: auto;
+            border: 5px solid #ddd;
+            border-top: 5px solid #2563eb;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #qrSection {
+            display: none;
+        }
+
+        #qrImage {
+            width: 240px;
+            height: 240px;
+            border: 10px solid #f5f5f5;
+            border-radius: 15px;
+            margin: 25px auto;
+            display: block;
+        }
+
+        .success {
+            color: #16a34a;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .redirect {
+            margin-top: 15px;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <div id="questionSection">
+
+        <div class="shield">
+            🔐
+        </div>
+
+        <h1>Enable Two-Factor Authentication</h1>
+
+        <p>
+            Protect your account with an extra layer of security.
+            Would you like to enable Time-based One-Time Password (TOTP)
+            authentication?
+        </p>
+
+        <div class="buttons">
+            <button class="yes-btn" onclick="enableTotp()">Yes, Enable</button>
+            <button class="no-btn" onclick="skipTotp()">Not Now</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top:20px;">Generating your QR Code...</p>
+        </div>
+
+    </div>
+
+    <div id="qrSection">
+
+        <div class="shield">
+            ✅
+        </div>
+
+        <h2>Scan QR Code</h2>
+
+        <p>
+            Open Google Authenticator, Microsoft Authenticator,
+            or any compatible app and scan the QR code below.
+        </p>
+
+        <img id="qrImage" src="" alt="QR Code">
+
+        <div class="success">
+            QR Code Generated Successfully
+        </div>
+
+        <div class="redirect">
+            <button class="yes-btn" onclick="window.location.href='/totp/passcode'">Next</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    async function enableTotp() {
+
+        document.querySelector(".buttons").style.display = "none";
+        document.getElementById("loading").style.display = "block";
+
+        try {
+
+            const response = await fetch("/totp/qr", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("Unable to generate QR");
+            }
+
+            const data = await response.json();
+
+            document.getElementById("loading").style.display = "none";
+            document.getElementById("questionSection").style.display = "none";
+            document.getElementById("qrSection").style.display = "block";
+
+            document.getElementById("qrImage").src = data.qr;
+
+        }
+        catch(err){
+
+            alert(err.message);
+
+            document.querySelector(".buttons").style.display = "flex";
+            document.getElementById("loading").style.display = "none";
+        }
+
+    }
+
+    function skipTotp(){
+
+        window.location.href = "/totp/skip-totp";
+
+    }
+
+</script>
+
+</body>
+</html>

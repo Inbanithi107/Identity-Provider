@@ -7,14 +7,21 @@ import org.springframework.security.core.Authentication;
 
 public class TotpAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final int code;
+    private String code;
 
     private final SecurityUser user;
 
-    public TotpAuthenticationToken(SecurityUser user, int code, Authentication authentication){
-        super(authentication.getAuthorities());
+    public TotpAuthenticationToken(SecurityUser user, String code){
+        super(user.getAuthorities());
         this.user = user;
         this.code = code;
+        setAuthenticated(false);
+    }
+
+    public TotpAuthenticationToken(SecurityUser user){
+        super(user.getAuthorities());
+        this.user = user;
+        setAuthenticated(true);
     }
 
     @Override
@@ -27,7 +34,7 @@ public class TotpAuthenticationToken extends AbstractAuthenticationToken {
         return user;
     }
 
-    public int getCode(){
+    public String getCode(){
         return code;
     }
 }

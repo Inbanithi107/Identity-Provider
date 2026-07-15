@@ -4,6 +4,9 @@ import com.techforge.identityprovider.dto.SecurityUser;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.Collection;
 
 public class SystemAuthenticationToken extends AbstractAuthenticationToken {
 
@@ -13,6 +16,12 @@ public class SystemAuthenticationToken extends AbstractAuthenticationToken {
         super(authentication.getAuthorities());
         this.user = user;
     }
+
+    public SystemAuthenticationToken(SecurityUser user, Collection<? extends GrantedAuthority> authorities){
+        super(authorities);
+        this.user = user;
+        setAuthenticated(true);
+    }
     @Override
     public @Nullable Object getCredentials() {
         return null;
@@ -20,10 +29,6 @@ public class SystemAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public @Nullable Object getPrincipal() {
-        return user;
-    }
-
-    public SecurityUser getUser(){
         return user;
     }
 }

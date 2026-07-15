@@ -42,6 +42,8 @@ public class User {
 
     private boolean mfaEnabled;
 
+    private String secret;
+
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role")
@@ -121,5 +123,13 @@ public class User {
     public User setMfaEnabled(boolean mfaEnabled) {
         this.mfaEnabled = mfaEnabled;
         return this;
+    }
+
+    public String getSecret() {
+        return secret;
+    }
+
+    public void setSecret(String secret) {
+        this.secret = secret;
     }
 }

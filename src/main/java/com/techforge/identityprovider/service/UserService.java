@@ -4,17 +4,18 @@ import com.techforge.identityprovider.dto.AuthProvider;
 import com.techforge.identityprovider.dto.Role;
 import com.techforge.identityprovider.entity.User;
 import com.techforge.identityprovider.entity.UserIdentity;
+import com.techforge.identityprovider.exception.AppException;
 import com.techforge.identityprovider.exception.UserAlreadyExistException;
 import com.techforge.identityprovider.repository.UserIdentityRepository;
 import com.techforge.identityprovider.repository.UserRepository;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -59,6 +60,14 @@ public class UserService {
 
     public Authentication authenticateUserOnRegister(String email, String password){
         return authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(email, password));
+    }
+
+    public User getUserById(UUID id){
+        return userRepository.findById(id).orElseThrow(()-> new AppException("User not in database"));
+    }
+
+    public User updateUser(User user){
+        return userRepository.save(user);
     }
 
 }

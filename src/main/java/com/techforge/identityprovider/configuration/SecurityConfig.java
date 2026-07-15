@@ -4,7 +4,11 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import com.techforge.identityprovider.SystemAuthorizationDecider;
+import com.techforge.identityprovider.configuration.totp.TotpAuthenticationProvider;
 import com.techforge.identityprovider.entity.Jwk;
+import com.techforge.identityprovider.handler.FormLoginSuccessHandler;
+import com.techforge.identityprovider.handler.OidcLoginSuccessHandler;
 import com.techforge.identityprovider.initializer.JwkInitializer;
 import com.techforge.identityprovider.service.SecurityUserDetailsService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -38,6 +44,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -45,6 +53,7 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import java.text.ParseException;
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 @Configuration
@@ -71,17 +80,19 @@ public class SecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, ClientRegistrationRepository repo){
+    public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http, ClientRegistrationRepository repo, FormLoginSuccessHandler formLoginSuccessHandler, OidcLoginSuccessHandler oidcLoginSuccessHandler){
 
         return http
 
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth-> auth
                         .requestMatchers("/css/**", "/image/**", "/js/**", "/register", "/error", "/favicon.ico", "/.well-known/**")
-                        .permitAll().anyRequest().authenticated())
-                .formLogin(form-> form.loginPage("/login").permitAll())
+                        .permitAll()
+                        .requestMatchers("/totp/**").hasAuthority("TOTP_PENDING")
+                        .anyRequest().access(new SystemAuthorizationDecider()))
+                .formLogin(form-> form.loginPage("/login").permitAll().successHandler(formLoginSuccessHandler))
                 .oauth2Login(oauth2-> oauth2.userInfoEndpoint(ep-> ep.oidcUserService(userDetailsService))
-                        .authorizationEndpoint(auth-> auth.authorizationRequestResolver(authorizationRequestResolver(repo))).loginPage("/login").permitAll())
+                        .authorizationEndpoint(auth-> auth.authorizationRequestResolver(authorizationRequestResolver(repo))).loginPage("/login").permitAll().successHandler(oidcLoginSuccessHandler))
                 .cors(cors-> cors.configurationSource(corsConfigurationSource()))
                 .build();
     }
@@ -109,8 +120,15 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config){
-        return config.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config, TotpAuthenticationProvider totpAuthenticationProvider){
+        return new ProviderManager(List.of(daoAuthenticationProvider(), totpAuthenticationProvider));
+    }
+
+    @Bean
+    public DaoAuthenticationProvider daoAuthenticationProvider(){
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
     }
 
     @Bean
@@ -165,6 +183,11 @@ public class SecurityConfig {
         JWKSet jwkSet = new JWKSet(rsaKey);
         return ((jwkSelector, securityContext) ->
                 jwkSelector.select(jwkSet));
+    }
+
+    @Bean
+    public RequestCache requestCache(){
+        return new HttpSessionRequestCache();
     }
 
 }

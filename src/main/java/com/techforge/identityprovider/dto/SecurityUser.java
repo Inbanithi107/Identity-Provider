@@ -3,14 +3,16 @@ package com.techforge.identityprovider.dto;
 import com.techforge.identityprovider.entity.User;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.oidc.OidcIdToken;
 import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -21,6 +23,8 @@ public class SecurityUser implements UserDetails, OidcUser {
 
     private OidcUser oidcUser;
 
+    List<GrantedAuthority> authorities = new ArrayList<>();
+
 
     @Override
     public Map<String, Object> getAttributes() {
@@ -29,7 +33,24 @@ public class SecurityUser implements UserDetails, OidcUser {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return user.getRoles().stream().map(Role::name).map(SimpleGrantedAuthority::new).toList();
+        if(!authorities.isEmpty()){
+            return authorities;
+        }
+        for(Role role : user.getRoles()){
+            authorities.add(new SimpleGrantedAuthority(role.name()));
+        }
+        if(oidcUser!=null){
+            authorities.addAll(oidcUser.getAuthorities());
+        } else {
+            authorities.add(new SimpleGrantedAuthority("TOTP_PENDING"));
+        }
+        FactorGrantedAuthority authority = FactorGrantedAuthority.fromFactor("USER");
+        authorities.add(authority);
+        return authorities;
+    }
+
+    public void addAuthority(String name){
+        authorities.add(new SimpleGrantedAuthority(name));
     }
 
     @Override
@@ -61,10 +82,6 @@ public class SecurityUser implements UserDetails, OidcUser {
 
     public User getUser() {
         return user;
-    }
-
-    public SecurityUser(){
-
     }
 
     public SecurityUser(User user, OidcUser oidcUser) {

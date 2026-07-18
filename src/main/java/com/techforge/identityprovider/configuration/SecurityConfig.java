@@ -72,7 +72,7 @@ public class SecurityConfig {
 
         return http.securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
                 .with(authorizationServerConfigurer, auth-> auth.oidc(Customizer.withDefaults()))
-                .authorizeHttpRequests(auth-> auth.anyRequest().authenticated())
+                .authorizeHttpRequests(auth-> auth.anyRequest().access(new SystemAuthorizationDecider()))
                 .cors(cors-> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(ex->
                         ex.defaultAuthenticationEntryPointFor(

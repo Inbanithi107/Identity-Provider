@@ -13,7 +13,7 @@ import java.io.InputStream;
 @Configuration
 public class PropertiesConfig {
 
-    @Value("${clients}")
+    @Value("${ip.clients}")
     private Resource resource;
 
     @Bean

@@ -73,7 +73,6 @@ public class TotpController {
     @ResponseBody
     public Map<String,Object> verify(@RequestBody TotpAuthRequest totp, @AuthenticationPrincipal SecurityUser securityUser, HttpServletRequest servletRequest, HttpServletResponse servletResponse){
         User user = userService.getUserById(securityUser.getUser().getId());
-        System.out.println(totp.getCode());
         securityUser.setUser(user);
         Authentication authentication = manager.authenticate(new TotpAuthenticationToken(securityUser, totp.getCode()));
         if(authentication.isAuthenticated()){

@@ -22,9 +22,7 @@ public class TotpAuthenticationProvider implements AuthenticationProvider {
     public @Nullable Authentication authenticate(Authentication authentication) throws AuthenticationException {
         TotpAuthenticationToken token = (TotpAuthenticationToken) authentication;
         SecurityUser user = (SecurityUser) token.getPrincipal();
-        System.out.println(user.getUser().getSecret());
         try{
-            System.out.println("1");
             boolean verified = totpService.verifyCode(token.getCode(), user.getUser().getSecret());
             if(verified){
                 return new TotpAuthenticationToken(user);
@@ -33,9 +31,9 @@ public class TotpAuthenticationProvider implements AuthenticationProvider {
             }
 
         }catch (Exception e){
-            e.printStackTrace();
+            throw new AppException("wrong totp code");
         }
-        return null;
+
     }
 
     @Override

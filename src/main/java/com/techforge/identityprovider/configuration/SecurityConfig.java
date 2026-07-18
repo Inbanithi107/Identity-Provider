@@ -5,12 +5,14 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import com.techforge.identityprovider.SystemAuthorizationDecider;
+import com.techforge.identityprovider.bootstrap.OAuthClientProperties;
 import com.techforge.identityprovider.configuration.totp.TotpAuthenticationProvider;
 import com.techforge.identityprovider.entity.Jwk;
 import com.techforge.identityprovider.handler.FormLoginSuccessHandler;
 import com.techforge.identityprovider.handler.OidcLoginSuccessHandler;
 import com.techforge.identityprovider.initializer.JwkInitializer;
 import com.techforge.identityprovider.service.SecurityUserDetailsService;
+import com.techforge.identityprovider.util.ClientBuilder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,25 +139,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public RegisteredClientRepository clientRepository(){
-        RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
-                .clientId("my-app")
-                .clientSecret(passwordEncoder().encode("12369"))
-                .redirectUri("http://localhost:4200")
-                .clientAuthenticationMethod(ClientAuthenticationMethod.NONE)
-                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
-                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)
-                .scope(OidcScopes.EMAIL)
-                .scope(OidcScopes.PROFILE)
-                .scope(OidcScopes.OPENID)
-                .clientSettings(ClientSettings.builder().requireProofKey(true).build())
-                .tokenSettings(TokenSettings.builder()
-                        .accessTokenTimeToLive(Duration.ofHours(1))
-                        .refreshTokenTimeToLive(Duration.ofDays(2))
-                        .build())
-                .build();
+    public RegisteredClientRepository clientRepository(OAuthClientProperties clientProperties){
+        List<RegisteredClient> clients = clientProperties.getClients()
+                .stream()
+                .map(client->ClientBuilder.toRegisteredClient(client,passwordEncoder()))
+                .toList();
 
-        return new InMemoryRegisteredClientRepository(client);
+        return new InMemoryRegisteredClientRepository(clients);
     }
 
     @Bean

@@ -10,9 +10,9 @@
 	</parent>
 	<groupId>com.techforge</groupId>
 	<artifactId>identityprovider</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>identityprovider</name>
-	<description>Demo project for Spring Boot</description>
+	<description>Identity Provider</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -62,6 +62,11 @@
             <groupId>dev.samstevens.totp</groupId>
             <artifactId>totp</artifactId>
             <version>1.7.1</version>
+        </dependency>
+        <dependency>
+            <groupId>tools.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>3.2.1</version>
         </dependency>
 
         <dependency>
